@@ -1,4 +1,4 @@
-package promotion;
+package Promotion;
 
 public class FreeDeliveryPromotion extends Promotion {
     public FreeDeliveryPromotion(String promoName) {

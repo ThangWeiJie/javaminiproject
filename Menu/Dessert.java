@@ -1,4 +1,4 @@
-package menu;
+package Menu;
 
 public class Dessert extends SideDish {
     public Dessert() {
