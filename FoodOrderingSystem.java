@@ -1,6 +1,7 @@
 // FoodOrderingSystem.java
 import java.util.*;
 import Payment.*;
+import Delivery.*;
 
 abstract class Food {
     private String name;
@@ -57,6 +58,7 @@ class OfflineOrder implements Order {
         System.out.println("Total: " + totalPrice);
         payment.processPayment();
 
+        System.out.println();
     }
 }
 
@@ -71,6 +73,7 @@ class OnlineOrder implements Order {
         System.out.println("Total: " + totalPrice);
 
         paymentMethod.processPayment();
+        System.out.println();
     }
 }
 
