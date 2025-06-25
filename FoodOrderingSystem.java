@@ -2,6 +2,10 @@
 import java.util.*;
 import Payment.*;
 import Delivery.*;
+import Feedback.*;
+import Menu.*;
+import Promotion.*;
+import User.*;
 
 abstract class Food {
     private String name;
@@ -44,19 +48,32 @@ class Burger extends Food {
 }
 
 interface Order {
-    public void orderFood(Food food, PaymentMethod payment);
+    public void orderFood(Food food, PaymentMethod payment, Delivery delivery, Promotion promo);
 }
 
 class OfflineOrder implements Order {
     private static final double SERVICE_CHARGE = 2.0;
 
-    public void orderFood(Food food, PaymentMethod payment) {
+    public void orderFood(Food food, PaymentMethod payment, Delivery delivery, Promotion promo) {
         food.prepare();
         System.out.println(food.getName() + " ordered offline");
 
         double totalPrice = food.getPrice() + SERVICE_CHARGE;
+
+        if(promo != null) {
+            if(promo instanceof FlatPromotion) {totalPrice = ((FlatPromotion)promo).applyDiscount(totalPrice);}
+            else if(promo instanceof FreeDeliveryPromotion) {((FreeDeliveryPromotion)promo).applyDiscount(totalPrice);}
+            else if(promo instanceof PercentagePromotion) {totalPrice = ((PercentagePromotion)promo).applyDiscount(totalPrice);}
+        }
+
         System.out.println("Total: " + totalPrice);
         payment.processPayment();
+
+        delivery.showDeliveryDetails();
+        System.out.println("---AFTER---");
+        delivery.updateStatus("Out for order");
+        delivery.updateLocation("City Centre");
+        delivery.showDeliveryDetails();
 
         System.out.println();
     }
@@ -65,16 +82,31 @@ class OfflineOrder implements Order {
 class OnlineOrder implements Order {
     private static final double SERVICE_CHARGE = 1.0;
 
-    public void orderFood(Food food, PaymentMethod paymentMethod) {
+    public void orderFood(Food food, PaymentMethod paymentMethod, Delivery delivery, Promotion promo) {
         food.prepare();
         System.out.println(food.getName() + " ordered online");
 
         double totalPrice = food.getPrice() + SERVICE_CHARGE;
+
+        if(promo != null) {
+            if(promo instanceof FlatPromotion) {totalPrice = ((FlatPromotion)promo).applyDiscount(totalPrice);}
+            else if(promo instanceof FreeDeliveryPromotion) {((FreeDeliveryPromotion)promo).applyDiscount(totalPrice);}
+            else if(promo instanceof PercentagePromotion) {totalPrice = ((PercentagePromotion)promo).applyDiscount(totalPrice);}
+        }
+
         System.out.println("Total: " + totalPrice);
 
         paymentMethod.processPayment();
+
+        delivery.showDeliveryDetails();
+        System.out.println("---AFTER---");
+        delivery.updateStatus("Out for order");
+        delivery.updateLocation("City Centre");
+        delivery.showDeliveryDetails();
+
         System.out.println();
     }
+
 }
 
 class Customer {
@@ -94,11 +126,11 @@ class Customer {
 
         if(order instanceof OnlineOrder) {
             OnlineOrder online = (OnlineOrder) order;
-            online.orderFood(food, p);
+            online.orderFood(food, p, new Delivery("TRK1234", "Not ready", "Restaurant"), null);
             service_charge = 1.0;
         } else if(order instanceof OfflineOrder) {
             OfflineOrder offline = (OfflineOrder) order;
-            offline.orderFood(food, p);
+            offline.orderFood(food, p, new Delivery("TRK5678", "Not ready", "Restaurant"), new PercentagePromotion("30% Promo", 30));
             service_charge = 2.0;
         }
 
