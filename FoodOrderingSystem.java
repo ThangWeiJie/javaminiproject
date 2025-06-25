@@ -121,20 +121,25 @@ class Customer {
         this.payment = payment;
     }
 
-    public void placeOrder(Food food, PaymentMethod p) {
+    public void placeOrder(Food food, PaymentMethod p, Promotion promo) {
         double service_charge = 0;
 
         if(order instanceof OnlineOrder) {
             OnlineOrder online = (OnlineOrder) order;
-            online.orderFood(food, p, new Delivery("TRK1234", "Not ready", "Restaurant"), null);
+            online.orderFood(food, p, new Delivery("TRK1234", "Not ready", "Restaurant"), promo);
             service_charge = 1.0;
         } else if(order instanceof OfflineOrder) {
             OfflineOrder offline = (OfflineOrder) order;
-            offline.orderFood(food, p, new Delivery("TRK5678", "Not ready", "Restaurant"), new PercentagePromotion("30% Promo", 30));
+            offline.orderFood(food, p, new Delivery("TRK5678", "Not ready", "Restaurant"), promo);
             service_charge = 2.0;
         }
+        
+        if(promo == null) {
+            grandTotal = grandTotal + food.getPrice() + service_charge;
+        } else {
+            grandTotal = grandTotal + promo.applyDiscount(food.getPrice()) + service_charge;
 
-        grandTotal = grandTotal + food.getPrice() + service_charge;
+        }
     }
 }
 
@@ -147,8 +152,8 @@ class FoodOrderingSystem {
   // Method to take orders from all customers in the system
     public static void takeOrders(Vector<Customer> cList) { 
         for (Customer c: cList) { 
-            c.placeOrder(new Pizza(), c.payment); 
-            c.placeOrder(new Burger(), c.payment); 
+            c.placeOrder(new Pizza(), c.payment, null); 
+            c.placeOrder(new Burger(), c.payment, new PercentagePromotion("30% Off", 30)); 
         }
     }
 
